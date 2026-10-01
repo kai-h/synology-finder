@@ -58,3 +58,7 @@ The build script compiles in `~/Library/Caches/SynologyFinder-build` because iCl
 - **Only the "Ready" status is mapped.** Other state codes show as "Unknown (n)". They need an unconfigured or migratable NAS to identify.
 - **Wake-on-LAN sends the standard magic packet** to the broadcast address, each local interface and the server's subnet. It has been unit tested but not yet seen waking a powered-off NAS. It needs Wake-on-LAN enabled in DSM and, from another network, a router that forwards directed broadcasts.
 - **Other Synology Assistant features** (installing DSM, system recovery, memory test, network setup) are not implemented.
+
+## Licence
+
+[MIT](LICENSE).
