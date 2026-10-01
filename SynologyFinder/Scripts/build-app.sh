@@ -1,5 +1,11 @@
 #!/bin/zsh
-# Builds an arm64 "Synology Finder.app" into build/ and ad-hoc signs it.
+# Builds an arm64 "Synology Finder.app" into build/ (or $OUT_DIR) and signs it.
+#   SIGN_IDENTITY="Developer ID Application: Name (TEAMID)"  signs for distribution (hardened runtime,
+#                                                             secure timestamp, ready to notarise).
+#                                                             Default is ad-hoc signing.
+#   OUT_DIR=/some/folder                                      use a folder outside iCloud, which adds
+#                                                             xattrs that invalidate signatures.
+#   BUNDLE_ID=<other id>                                      see below.
 set -euo pipefail
 cd "${0:A:h}/.."
 
@@ -8,7 +14,7 @@ SCRATCH="$HOME/Library/Caches/SynologyFinder-build"
 swift build -c release --arch arm64 --scratch-path "$SCRATCH"
 BIN="$(swift build -c release --arch arm64 --scratch-path "$SCRATCH" --show-bin-path)/SynologyFinder"
 
-APP="build/Synology Finder.app"
+APP="${OUT_DIR:-build}/Synology Finder.app"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS"
 cp "$BIN" "$APP/Contents/MacOS/SynologyFinder"
@@ -50,5 +56,10 @@ if [[ -n "${BUNDLE_ID:-}" ]]; then
 fi
 
 xattr -cr "$APP"
-codesign --force --sign - "$APP"
+if [[ -n "${SIGN_IDENTITY:-}" ]]; then
+    codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP"
+else
+    codesign --force --sign - "$APP"
+fi
+codesign --verify --strict "$APP"
 echo "Built $APP"

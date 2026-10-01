@@ -24,11 +24,7 @@ This project is not affiliated with Synology. Synology and DiskStation are trade
 
 ## Install
 
-Download `SynologyFinder-1.0-arm64.zip` from the [releases](../../releases) page and move the app to Applications. The app is ad-hoc signed and not notarised, so macOS will refuse to open a downloaded copy the first time. Either right-click it and choose Open, or run:
-
-```bash
-xattr -dr com.apple.quarantine "/Applications/Synology Finder.app"
-```
+Download `SynologyFinder-1.0-arm64.zip` from the [releases](../../releases) page, unzip it and move the app to Applications. It is signed with a Developer ID and notarised by Apple, so it opens normally.
 
 On first launch, click Allow when macOS asks whether the app may find devices on your local network. If you chose Don't Allow, turn Synology Finder on under System Settings > Privacy & Security > Local Network.
 
@@ -41,6 +37,14 @@ swift test                # unit tests
 ```
 
 The build script compiles in `~/Library/Caches/SynologyFinder-build` because iCloud-synced folders such as `~/Documents` add extended attributes that make code signing fail. Run `swift test` with `--scratch-path` pointing outside such a folder if you hit the same error.
+
+By default the app is ad-hoc signed, which is fine for running it on the Mac that built it. To sign it for distribution, set `SIGN_IDENTITY` to a Developer ID Application identity (this enables the hardened runtime and a secure timestamp, ready for notarisation), and set `OUT_DIR` to a folder outside iCloud so the signature stays valid:
+
+```bash
+SIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" OUT_DIR=/tmp/release ./Scripts/build-app.sh
+```
+
+Notarising and stapling are done separately with `xcrun notarytool` and `xcrun stapler`.
 
 `BUNDLE_ID=com.example.test ./Scripts/build-app.sh` builds a copy under a different bundle identifier, which macOS treats as a new app. Use it to see the first-run Local Network prompt again, because `tccutil reset` does not clear Local Network permission.
 
