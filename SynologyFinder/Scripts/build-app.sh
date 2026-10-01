@@ -5,7 +5,7 @@
 #                                                             Default is ad-hoc signing.
 #   OUT_DIR=/some/folder                                      use a folder outside iCloud, which adds
 #                                                             xattrs that invalidate signatures.
-#   BUNDLE_ID=<other id>                                      see below.
+#   BUNDLE_ID=<other id>, VERSION=<x.y>                       see below.
 set -euo pipefail
 cd "${0:A:h}/.."
 
@@ -53,6 +53,12 @@ PLIST
 # BUNDLE_ID=<other id> builds a copy macOS treats as a new app, to exercise the first-run Local Network prompt.
 if [[ -n "${BUNDLE_ID:-}" ]]; then
     /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" "$APP/Contents/Info.plist"
+fi
+
+# VERSION=1.2 sets the version shown in the app (default is the one in the plist above).
+if [[ -n "${VERSION:-}" ]]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$APP/Contents/Info.plist"
 fi
 
 xattr -cr "$APP"
